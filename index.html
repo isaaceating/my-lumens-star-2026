@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>2026 Lumens 福委會音樂祭</title>
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="hero">
+    <div class="hero-overlay">
+      <p class="eyebrow">2026 Lumens Welfare Committee Presents</p>
+      <h1>音樂祭：光影與弦律的對話</h1>
+      <h2>歌唱及才藝表演大賽</h2>
+      <p class="hero-desc">
+        用歌聲與才藝點亮舞台，讓光影與旋律在 Lumens 相遇。
+      </p>
+
+      <div class="hero-info">
+        <span>比賽時間：2026/7/29</span>
+        <span>地點：5F Demo Room</span>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="section event-section">
+      <h2>活動資訊</h2>
+      <div class="info-grid">
+        <div class="info-card">
+          <h3>報名截止</h3>
+          <p>2026/6/15</p>
+        </div>
+        <div class="info-card">
+          <h3>人氣投票期間</h3>
+          <p>2026/6/20 - 2026/7/28</p>
+        </div>
+        <div class="info-card">
+          <h3>比賽日期</h3>
+          <p>2026/7/29</p>
+        </div>
+        <div class="info-card">
+          <h3>比賽地點</h3>
+          <p>5F Demo Room</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section register-section">
+      <h2>我要報名</h2>
+      <p class="section-desc">
+        報名後將由福委會審核，審核通過後會顯示於參賽選手區。
+      </p>
+
+      <form id="registrationForm" class="form-card">
+        <label>
+          部門
+          <input type="text" id="department" required />
+        </label>
+
+        <label>
+          工號
+          <input type="text" id="employeeId" required />
+        </label>
+
+        <label>
+          姓名（中 + 英）
+          <input type="text" id="name" placeholder="陳羿廷(Isaac)" required />
+        </label>
+
+        <label>
+          藝名
+          <input type="text" id="stageName" placeholder="A.K.A." />
+        </label>
+
+        <label>
+          表演項目
+          <input type="text" id="performanceItem" placeholder="歌手 - 歌名 / 才藝表演項目" required />
+        </label>
+
+        <label>
+          個人照
+          <input type="file" id="photo" accept="image/png, image/jpeg" required />
+        </label>
+
+        <label class="checkbox-label">
+          <input type="checkbox" id="photoConsent" required />
+          我同意福委會於本次活動網站與活動宣傳中使用此照片。
+        </label>
+
+        <button type="submit">送出報名</button>
+
+        <p id="registrationMessage" class="message"></p>
+      </form>
+    </section>
+
+    <section class="section contestants-section">
+      <div class="section-title-row">
+        <div>
+          <h2>參賽選手</h2>
+          <p class="section-desc">為你喜歡的選手送上每日一票人氣應援！</p>
+        </div>
+
+        <button id="loginButton" class="secondary-button">使用 Google 登入投票</button>
+        <button id="logoutButton" class="secondary-button hidden">登出</button>
+      </div>
+
+      <p id="userStatus" class="user-status">尚未登入</p>
+
+      <div id="contestantsGrid" class="contestants-grid">
+        <!-- 選手卡片會由 app.js 動態產生 -->
+      </div>
+    </section>
+
+    <section class="section rules-section">
+      <h2>活動規則</h2>
+      <ol>
+        <li>本活動開放 Lumens 員工報名參加。</li>
+        <li>表演形式不限歌唱、樂器、舞蹈、魔術、脫口秀或其他才藝表演。</li>
+        <li>報名資料經福委會確認後，將顯示於活動網站。</li>
+        <li>人氣應援投票需使用 Google 帳號登入。</li>
+        <li>每個 Google 帳號每日限投 1 票。</li>
+        <li>福委會保留活動內容調整與最終解釋權。</li>
+      </ol>
+    </section>
+  </main>
+
+  <footer>
+    <p>© 2026 Lumens 福委會</p>
+  </footer>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
