@@ -63,6 +63,58 @@
       </div>
     </section>
   </main>
+<div id="editModal" class="edit-modal hidden">
+  <div class="edit-modal-card">
+    <div class="edit-modal-header">
+      <div>
+        <h2>編輯選手資料</h2>
+        <p class="section-desc">修改後會立即同步到前台選手卡片。</p>
+      </div>
+      <button id="closeEditModalButton" class="secondary-button">關閉</button>
+    </div>
+
+    <form id="editContestantForm" class="edit-form">
+      <input type="hidden" id="editContestantId" />
+
+      <label>
+        姓名
+        <input type="text" id="editName" required />
+      </label>
+
+      <label>
+        藝名
+        <input type="text" id="editStageName" />
+      </label>
+
+      <label>
+        部門
+        <input type="text" id="editDepartment" required />
+      </label>
+
+      <label>
+        工號
+        <input type="text" id="editEmployeeId" required />
+      </label>
+
+      <label>
+        表演項目
+        <input type="text" id="editPerformanceItem" required />
+      </label>
+
+      <label>
+        排序
+        <input type="number" id="editManualOrder" required />
+      </label>
+
+      <div class="edit-form-actions">
+        <button type="submit">儲存修改</button>
+        <button type="button" id="cancelEditButton" class="secondary-button">取消</button>
+      </div>
+
+      <p id="editMessage" class="message"></p>
+    </form>
+  </div>
+</div>
 
   <script type="module" src="admin.js"></script>
 </body>

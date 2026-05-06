@@ -425,3 +425,62 @@ footer {
   color: #fff;
   border: 1px solid rgba(255,255,255,0.2);
 }
+
+.edit-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(0, 0, 0, 0.68);
+  backdrop-filter: blur(8px);
+}
+
+.edit-modal.hidden {
+  display: none;
+}
+
+.edit-modal-card {
+  width: min(720px, 100%);
+  max-height: 90vh;
+  overflow-y: auto;
+  border-radius: 28px;
+  padding: 28px;
+  background:
+    radial-gradient(circle at 10% 10%, rgba(255, 209, 102, 0.16), transparent 26%),
+    linear-gradient(135deg, #14172a, #0c2238);
+  border: 1px solid rgba(255,255,255,0.16);
+  box-shadow: 0 24px 80px rgba(0,0,0,0.45);
+}
+
+.edit-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 18px;
+  margin-bottom: 22px;
+}
+
+.edit-modal-header h2 {
+  margin: 0 0 8px;
+  font-size: 28px;
+}
+
+.edit-form {
+  display: grid;
+  gap: 16px;
+}
+
+.edit-form-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+.admin-edit-button {
+  background: linear-gradient(135deg, #9be7ff, #4cc9f0);
+  color: #08111f;
+}

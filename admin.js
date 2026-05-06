@@ -16,7 +16,8 @@ import {
   getDocs,
   updateDoc,
   query,
-  orderBy
+  orderBy,
+  serverTimestamp
 } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
 
 // TODO: 換成你 Firebase Console 裡的完整 config
@@ -37,6 +38,7 @@ const provider = new GoogleAuthProvider();
 
 let currentUser = null;
 let isCurrentUserAdmin = false;
+let adminContestantsCache = [];
 
 // DOM
 const adminLoginButton = document.getElementById("adminLoginButton");
@@ -46,6 +48,21 @@ const adminAccessStatus = document.getElementById("adminAccessStatus");
 const adminContent = document.getElementById("adminContent");
 const adminContestantsTable = document.getElementById("adminContestantsTable");
 const refreshAdminDataButton = document.getElementById("refreshAdminDataButton");
+
+// Edit Modal DOM
+const editModal = document.getElementById("editModal");
+const editContestantForm = document.getElementById("editContestantForm");
+const closeEditModalButton = document.getElementById("closeEditModalButton");
+const cancelEditButton = document.getElementById("cancelEditButton");
+const editMessage = document.getElementById("editMessage");
+
+const editContestantId = document.getElementById("editContestantId");
+const editName = document.getElementById("editName");
+const editStageName = document.getElementById("editStageName");
+const editDepartment = document.getElementById("editDepartment");
+const editEmployeeId = document.getElementById("editEmployeeId");
+const editPerformanceItem = document.getElementById("editPerformanceItem");
+const editManualOrder = document.getElementById("editManualOrder");
 
 // -----------------------------
 // Login
@@ -165,6 +182,7 @@ async function loadContestantsForAdmin() {
       return timeA - timeB;
     });
 
+    adminContestantsCache = contestants;
     renderAdminContestants(contestants);
   } catch (error) {
     console.error("Load admin contestants failed:", error);
@@ -246,6 +264,13 @@ function renderAdminContestants(contestants) {
           <td>
             <div class="admin-row-actions">
               <button
+                class="edit-contestant-button admin-edit-button"
+                data-id="${contestant.id}"
+              >
+                編輯
+              </button>
+
+              <button
                 class="toggle-publish-button"
                 data-id="${contestant.id}"
                 data-current="${isPublished}"
@@ -270,6 +295,13 @@ function renderAdminContestants(contestants) {
 }
 
 function bindAdminRowEvents() {
+  document.querySelectorAll(".edit-contestant-button").forEach((button) => {
+    button.addEventListener("click", () => {
+      const contestantId = button.dataset.id;
+      openEditModal(contestantId);
+    });
+  });
+
   document.querySelectorAll(".toggle-publish-button").forEach((button) => {
     button.addEventListener("click", async () => {
       const contestantId = button.dataset.id;
@@ -299,6 +331,114 @@ function bindAdminRowEvents() {
 }
 
 // -----------------------------
+// Edit Modal
+// -----------------------------
+function openEditModal(contestantId) {
+  const contestant = adminContestantsCache.find((item) => item.id === contestantId);
+
+  if (!contestant) {
+    alert("找不到這位選手資料，請重新整理後再試。");
+    return;
+  }
+
+  editContestantId.value = contestant.id;
+  editName.value = contestant.name || "";
+  editStageName.value = contestant.stageName || "";
+  editDepartment.value = contestant.department || "";
+  editEmployeeId.value = contestant.employeeId || "";
+  editPerformanceItem.value = contestant.performanceItem || "";
+  editManualOrder.value = typeof contestant.manualOrder === "number"
+    ? contestant.manualOrder
+    : 999;
+
+  editMessage.textContent = "";
+  editModal.classList.remove("hidden");
+}
+
+function closeEditModal() {
+  editModal.classList.add("hidden");
+  editContestantForm.reset();
+  editMessage.textContent = "";
+}
+
+closeEditModalButton.addEventListener("click", closeEditModal);
+cancelEditButton.addEventListener("click", closeEditModal);
+
+editModal.addEventListener("click", (event) => {
+  if (event.target === editModal) {
+    closeEditModal();
+  }
+});
+
+editContestantForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+
+  if (!isCurrentUserAdmin) {
+    alert("你不是管理員，無法更新資料。");
+    return;
+  }
+
+  const contestantId = editContestantId.value;
+  const name = editName.value.trim();
+  const stageName = editStageName.value.trim();
+  const department = editDepartment.value.trim();
+  const employeeId = editEmployeeId.value.trim();
+  const performanceItem = editPerformanceItem.value.trim();
+  const manualOrder = Number(editManualOrder.value);
+
+  if (!contestantId) {
+    editMessage.textContent = "找不到選手 ID。";
+    return;
+  }
+
+  if (!name || !department || !employeeId || !performanceItem) {
+    editMessage.textContent = "請完整填寫姓名、部門、工號與表演項目。";
+    return;
+  }
+
+  if (Number.isNaN(manualOrder)) {
+    editMessage.textContent = "排序請輸入數字。";
+    return;
+  }
+
+  try {
+    const submitButton = editContestantForm.querySelector("button[type='submit']");
+    submitButton.disabled = true;
+    submitButton.textContent = "儲存中...";
+    editMessage.textContent = "資料儲存中...";
+
+    const contestantRef = doc(db, "contestants", contestantId);
+
+    await updateDoc(contestantRef, {
+      name,
+      stageName,
+      department,
+      employeeId,
+      performanceItem,
+      manualOrder,
+      updatedAt: serverTimestamp(),
+      updatedBy: currentUser.email,
+      updatedByUid: currentUser.uid
+    });
+
+    editMessage.textContent = "儲存成功。";
+
+    await loadContestantsForAdmin();
+
+    setTimeout(() => {
+      closeEditModal();
+    }, 500);
+  } catch (error) {
+    console.error("Update contestant failed:", error);
+    editMessage.textContent = `儲存失敗：${error.message}`;
+  } finally {
+    const submitButton = editContestantForm.querySelector("button[type='submit']");
+    submitButton.disabled = false;
+    submitButton.textContent = "儲存修改";
+  }
+});
+
+// -----------------------------
 // Update Actions
 // -----------------------------
 async function togglePublishStatus(contestantId, nextStatus) {
@@ -311,7 +451,10 @@ async function togglePublishStatus(contestantId, nextStatus) {
     const contestantRef = doc(db, "contestants", contestantId);
 
     await updateDoc(contestantRef, {
-      publishStatus: nextStatus
+      publishStatus: nextStatus,
+      updatedAt: serverTimestamp(),
+      updatedBy: currentUser.email,
+      updatedByUid: currentUser.uid
     });
 
     await loadContestantsForAdmin();
@@ -328,7 +471,10 @@ async function updateManualOrder(contestantId, manualOrder) {
     const contestantRef = doc(db, "contestants", contestantId);
 
     await updateDoc(contestantRef, {
-      manualOrder
+      manualOrder,
+      updatedAt: serverTimestamp(),
+      updatedBy: currentUser.email,
+      updatedByUid: currentUser.uid
     });
 
     await loadContestantsForAdmin();
@@ -354,4 +500,4 @@ function escapeHtml(value) {
     .replaceAll("'", "&#039;");
 }
 
-console.log("Admin page loaded.");
+console.log("Admin page v1.3 loaded.");
