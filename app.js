@@ -64,6 +64,7 @@ const userStatus = document.getElementById("userStatus");
 const registrationForm = document.getElementById("registrationForm");
 const registrationMessage = document.getElementById("registrationMessage");
 const contestantsGrid = document.getElementById("contestantsGrid");
+const votingStatusText = document.getElementById("votingStatusText");
 
 // -----------------------------
 // Google Login
@@ -242,6 +243,8 @@ function listenToPublishedContestants() {
 }
 
 function renderContestants(contestants) {
+  const votingStatus = getVotingStatus();
+
   if (!contestants.length) {
     contestantsGrid.innerHTML = `
       <p class="message">目前尚無已公開的參賽選手。</p>
@@ -274,9 +277,13 @@ function renderContestants(contestants) {
 
             <div class="vote-row">
               <span class="vote-count">人氣票數：${contestant.voteCount || 0}</span>
-              <button class="vote-button" data-id="${contestant.id}">
-                人氣應援
-              </button>
+                <button
+                  class="vote-button"
+                  data-id="${contestant.id}"
+                  ${votingStatus.canVote ? "" : "disabled"}
+                >
+                  ${votingStatus.buttonText}
+                </button>
             </div>
           </div>
         </article>
@@ -286,6 +293,13 @@ function renderContestants(contestants) {
 
   document.querySelectorAll(".vote-button").forEach((button) => {
     button.addEventListener("click", async () => {
+      const votingStatus = getVotingStatus();
+
+      if (!votingStatus.canVote) {
+        alert(votingStatus.text);
+        return;
+      }
+
       const contestantId = button.dataset.id;
       await handleVote(contestantId, button);
     });
@@ -295,6 +309,52 @@ function renderContestants(contestants) {
 // -----------------------------
 // 人氣應援投票
 // -----------------------------
+function getVotingStatus() {
+  const now = new Date();
+
+  if (VOTING_TEST_MODE) {
+    return {
+      status: "open",
+      text: "測試模式開放中",
+      buttonText: "人氣應援",
+      canVote: true
+    };
+  }
+
+  if (now < VOTING_START) {
+    return {
+      status: "not-started",
+      text: "尚未開放投票",
+      buttonText: "尚未開放",
+      canVote: false
+    };
+  }
+
+  if (now > VOTING_END) {
+    return {
+      status: "ended",
+      text: "投票已結束",
+      buttonText: "投票已結束",
+      canVote: false
+    };
+  }
+
+  return {
+    status: "open",
+    text: "投票進行中",
+    buttonText: "人氣應援",
+    canVote: true
+  };
+}
+
+function updateVotingStatusUI() {
+  const votingStatus = getVotingStatus();
+
+  if (votingStatusText) {
+    votingStatusText.textContent = votingStatus.text;
+  }
+}
+
 async function handleVote(contestantId, button) {
   try {
     if (!currentUser) {
@@ -422,6 +482,7 @@ function escapeHtml(value) {
 }
 
 // 啟動
+updateVotingStatusUI();
 listenToPublishedContestants();
 
 console.log("Firebase connected successfully.");

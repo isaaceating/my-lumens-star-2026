@@ -189,6 +189,26 @@ button:hover {
   color: #ffd166;
 }
 
+.voting-status-box {
+  margin-top: 18px;
+  padding: 16px 18px;
+  border-radius: 18px;
+  background: rgba(255, 209, 102, 0.12);
+  border: 1px solid rgba(255, 209, 102, 0.28);
+  color: #f7f3ff;
+  line-height: 1.8;
+}
+
+.voting-status-box strong {
+  color: #ffd166;
+}
+
+.vote-button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+}
+
 .contestants-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
