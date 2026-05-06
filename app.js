@@ -16,7 +16,8 @@ import {
   query,
   where,
   onSnapshot,
-  serverTimestamp
+  serverTimestamp,
+  runTransaction
 } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
 
 import {
@@ -46,6 +47,15 @@ const provider = new GoogleAuthProvider();
 
 let currentUser = null;
 
+// 開發測試用：true = 不檢查 6/20 - 7/28 投票期間
+// 正式上線前請改成 false
+const VOTING_TEST_MODE = true;
+
+// 活動設定
+const REGISTRATION_DEADLINE = new Date("2026-06-15T23:59:59+08:00");
+const VOTING_START = new Date("2026-06-20T00:00:00+08:00");
+const VOTING_END = new Date("2026-07-28T23:59:59+08:00");
+
 // DOM
 const loginButton = document.getElementById("loginButton");
 const logoutButton = document.getElementById("logoutButton");
@@ -54,9 +64,6 @@ const userStatus = document.getElementById("userStatus");
 const registrationForm = document.getElementById("registrationForm");
 const registrationMessage = document.getElementById("registrationMessage");
 const contestantsGrid = document.getElementById("contestantsGrid");
-
-// 活動設定
-const REGISTRATION_DEADLINE = new Date("2026-06-15T23:59:59+08:00");
 
 // -----------------------------
 // Google Login
@@ -146,23 +153,18 @@ registrationForm.addEventListener("submit", async (event) => {
 
     setFormLoading(true, "報名資料上傳中，請稍候...");
 
-    // 先產生 Firestore 文件 ID
     const contestantRef = doc(collection(db, "contestants"));
     const contestantId = contestantRef.id;
 
-    // 準備照片路徑
     const fileExtension = getFileExtension(photoFile.name);
     const safeFileName = `${contestantId}_${Date.now()}.${fileExtension}`;
     const photoPath = `contestant_photos/${safeFileName}`;
 
-    // 上傳照片到 Firebase Storage
     const photoRef = ref(storage, photoPath);
     await uploadBytes(photoRef, photoFile);
 
-    // 取得照片公開網址
     const photoUrl = await getDownloadURL(photoRef);
 
-    // 寫入 Firestore
     const contestantData = {
       contestantId,
       department,
@@ -282,12 +284,92 @@ function renderContestants(contestants) {
     })
     .join("");
 
-  // 投票功能下一步才正式接，這裡先防止按鈕沒反應
   document.querySelectorAll(".vote-button").forEach((button) => {
-    button.addEventListener("click", () => {
-      alert("投票功能下一步開發。現在先測試報名與選手卡片顯示。");
+    button.addEventListener("click", async () => {
+      const contestantId = button.dataset.id;
+      await handleVote(contestantId, button);
     });
   });
+}
+
+// -----------------------------
+// 人氣應援投票
+// -----------------------------
+async function handleVote(contestantId, button) {
+  try {
+    if (!currentUser) {
+      alert("請先使用 Google 登入後再投票。");
+      return;
+    }
+
+    const now = new Date();
+
+    if (!VOTING_TEST_MODE && (now < VOTING_START || now > VOTING_END)) {
+      alert("目前不在人氣應援投票期間。投票期間為 2026/6/20 - 2026/7/28。");
+      return;
+    }
+
+    const voteDate = getTaiwanDateString(new Date());
+    const voteId = `${currentUser.uid}_${voteDate}`;
+
+    const contestantRef = doc(db, "contestants", contestantId);
+    const voteRef = doc(db, "votes", voteId);
+
+    button.disabled = true;
+    button.textContent = "投票中...";
+
+    await runTransaction(db, async (transaction) => {
+      const voteSnap = await transaction.get(voteRef);
+
+      if (voteSnap.exists()) {
+        throw new Error("ALREADY_VOTED_TODAY");
+      }
+
+      const contestantSnap = await transaction.get(contestantRef);
+
+      if (!contestantSnap.exists()) {
+        throw new Error("CONTESTANT_NOT_FOUND");
+      }
+
+      const contestantData = contestantSnap.data();
+
+      if (contestantData.publishStatus !== true) {
+        throw new Error("CONTESTANT_NOT_PUBLISHED");
+      }
+
+      const currentVoteCount = contestantData.voteCount || 0;
+
+      transaction.set(voteRef, {
+        uid: currentUser.uid,
+        email: currentUser.email,
+        voteDate,
+        contestantId,
+        contestantName: contestantData.name || "",
+        createdAt: serverTimestamp()
+      });
+
+      transaction.update(contestantRef, {
+        voteCount: currentVoteCount + 1
+      });
+    });
+
+    alert("投票成功！感謝你的每日人氣應援。");
+  } catch (error) {
+    console.error("Vote failed:", error);
+
+    if (error.message === "ALREADY_VOTED_TODAY") {
+      alert("你今天已經投過票囉，明天再來應援！");
+    } else if (error.message === "CONTESTANT_NOT_FOUND") {
+      alert("找不到此參賽選手，請重新整理後再試。");
+    } else if (error.message === "CONTESTANT_NOT_PUBLISHED") {
+      alert("此選手尚未公開，無法投票。");
+    } else {
+      alert(`投票失敗：${error.code || ""} ${error.message || ""}`);
+    }
+  } finally {
+    button.disabled = false;
+    button.textContent = "人氣應援";
+  }
 }
 
 // -----------------------------
@@ -315,6 +397,17 @@ function getFileExtension(fileName) {
   }
 
   return "jpg";
+}
+
+function getTaiwanDateString(date) {
+  const formatter = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Taipei",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit"
+  });
+
+  return formatter.format(date);
 }
 
 function escapeHtml(value) {
