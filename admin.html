@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Admin｜2026 Lumens 福委會音樂祭</title>
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="admin-page">
+    <section class="section admin-section">
+      <div class="section-title-row">
+        <div>
+          <h1>活動管理後台</h1>
+          <p class="section-desc">
+            2026 Lumens 福委會音樂祭｜報名審核與選手排序管理
+          </p>
+        </div>
+
+        <div class="admin-actions">
+          <a class="admin-link-button" href="index.html">回到前台</a>
+          <button id="adminLoginButton" class="secondary-button">Google 登入</button>
+          <button id="adminLogoutButton" class="secondary-button hidden">登出</button>
+        </div>
+      </div>
+
+      <p id="adminUserStatus" class="user-status">尚未登入</p>
+      <p id="adminAccessStatus" class="message"></p>
+
+      <div id="adminContent" class="hidden">
+        <div class="admin-toolbar">
+          <div>
+            <strong>報名者列表</strong>
+            <p class="section-desc">公開狀態與排序調整後會立即影響前台顯示。</p>
+          </div>
+
+          <button id="refreshAdminDataButton" class="secondary-button">重新整理</button>
+        </div>
+
+        <div class="admin-table-wrap">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>照片</th>
+                <th>狀態</th>
+                <th>排序</th>
+                <th>姓名 / 藝名</th>
+                <th>部門 / 工號</th>
+                <th>表演項目</th>
+                <th>票數</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody id="adminContestantsTable">
+              <tr>
+                <td colspan="8">尚無資料</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script type="module" src="admin.js"></script>
+</body>
+</html>

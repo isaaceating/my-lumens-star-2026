@@ -96,6 +96,7 @@ onAuthStateChanged(auth, (user) => {
     logoutButton.classList.remove("hidden");
 
     console.log("User logged in:", user.email);
+    console.log("User UID:", user.uid);
   } else {
     userStatus.textContent = "尚未登入";
     loginButton.classList.remove("hidden");

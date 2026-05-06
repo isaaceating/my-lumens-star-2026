@@ -294,3 +294,134 @@ footer {
     min-height: 460px;
   }
 }
+
+.admin-page {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 20% 10%, rgba(255, 193, 7, 0.2), transparent 24%),
+    radial-gradient(circle at 90% 20%, rgba(0, 142, 211, 0.24), transparent 28%),
+    linear-gradient(135deg, #080915, #111832 55%, #071c2f);
+}
+
+.admin-section h1 {
+  font-size: 36px;
+  margin: 0 0 10px;
+}
+
+.admin-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.admin-link-button {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+  border-radius: 999px;
+  padding: 14px 22px;
+  background: rgba(255,255,255,0.12);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.2);
+  font-weight: 700;
+}
+
+.admin-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin: 28px 0 16px;
+  padding: 18px 20px;
+  border-radius: 20px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.14);
+}
+
+.admin-table-wrap {
+  overflow-x: auto;
+  border-radius: 20px;
+  border: 1px solid rgba(255,255,255,0.14);
+  background: rgba(255,255,255,0.07);
+}
+
+.admin-table {
+  width: 100%;
+  min-width: 1050px;
+  border-collapse: collapse;
+}
+
+.admin-table th,
+.admin-table td {
+  padding: 14px 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  text-align: left;
+  vertical-align: middle;
+}
+
+.admin-table th {
+  color: #ffd166;
+  font-size: 14px;
+  background: rgba(255,255,255,0.06);
+}
+
+.admin-table td {
+  color: #f7f3ff;
+  font-size: 14px;
+}
+
+.admin-photo {
+  width: 70px;
+  height: 70px;
+  object-fit: cover;
+  border-radius: 14px;
+  background: rgba(255,255,255,0.1);
+}
+
+.status-badge {
+  display: inline-flex;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 12px;
+}
+
+.status-published {
+  color: #0f2b1f;
+  background: #7ee2a8;
+}
+
+.status-hidden {
+  color: #2d2308;
+  background: #ffd166;
+}
+
+.admin-order-input {
+  width: 82px;
+  padding: 9px 10px;
+  border-radius: 10px;
+  font-size: 14px;
+}
+
+.admin-small-text {
+  color: #cfc9e8;
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+.admin-row-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.admin-row-actions button {
+  padding: 9px 12px;
+  font-size: 13px;
+}
+
+.admin-danger-button {
+  background: rgba(255,255,255,0.12);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.2);
+}
