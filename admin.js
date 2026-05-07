@@ -392,7 +392,7 @@ editContestantForm.addEventListener("submit", async (event) => {
   }
 
   if (!name || !department || !employeeId || !performanceItem) {
-    editMessage.textContent = "請完整填寫姓名、部門、工號與表演項目。";
+    editMessage.textContent = "請完整填寫姓名、部門、工號與演唱歌曲。";
     return;
   }
 

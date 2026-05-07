@@ -484,3 +484,189 @@ footer {
   background: linear-gradient(135deg, #9be7ff, #4cc9f0);
   color: #08111f;
 }
+
+.site-nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  min-height: 68px;
+  padding: 14px 28px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 18px;
+  background: rgba(8, 9, 21, 0.78);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.nav-logo {
+  color: #ffd166;
+  font-weight: 800;
+  text-decoration: none;
+  letter-spacing: 0.3px;
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+
+.nav-links a {
+  color: #f7f3ff;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.nav-links a:hover {
+  color: #ffd166;
+}
+
+.nav-cta {
+  padding: 9px 14px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #ffd166, #f77f00);
+  color: #151515 !important;
+}
+
+.hero-actions {
+  margin-top: 30px;
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.primary-link-button,
+.secondary-link-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  padding: 14px 22px;
+  text-decoration: none;
+  font-weight: 800;
+}
+
+.primary-link-button {
+  background: linear-gradient(135deg, #ffd166, #f77f00);
+  color: #151515;
+}
+
+.secondary-link-button {
+  background: rgba(255,255,255,0.12);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.22);
+}
+
+.section-cta {
+  margin-top: 24px;
+}
+
+.login-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.sub-hero {
+  min-height: 360px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 64px 20px;
+  text-align: center;
+  background:
+    radial-gradient(circle at 20% 20%, rgba(255, 193, 7, 0.25), transparent 28%),
+    radial-gradient(circle at 80% 10%, rgba(0, 142, 211, 0.34), transparent 30%),
+    linear-gradient(135deg, #080915, #151b3d 55%, #071c2f);
+}
+
+.sub-hero-inner {
+  max-width: 860px;
+}
+
+.sub-hero h1 {
+  margin: 12px 0 16px;
+  font-size: clamp(36px, 6vw, 60px);
+}
+
+.sub-hero p {
+  color: #ddd8f5;
+  font-size: 18px;
+}
+
+.register-layout {
+  display: grid;
+  grid-template-columns: 0.85fr 1.15fr;
+  gap: 28px;
+  align-items: start;
+}
+
+.register-guide,
+.register-form-area,
+.register-login-card {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.14);
+  border-radius: 24px;
+  box-shadow: 0 18px 50px rgba(0,0,0,0.25);
+}
+
+.register-guide {
+  padding: 28px;
+}
+
+.register-guide h2 {
+  margin-top: 0;
+}
+
+.register-guide ul {
+  line-height: 1.9;
+  color: #ddd8f5;
+  padding-left: 20px;
+}
+
+.register-form-area {
+  padding: 28px;
+}
+
+.register-form-area .form-card {
+  box-shadow: none;
+  border: none;
+  background: transparent;
+  padding: 0;
+}
+
+.register-login-card {
+  margin-top: 24px;
+  padding: 20px;
+}
+
+.register-login-card h3 {
+  margin-top: 0;
+  color: #ffd166;
+}
+
+.register-login-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 820px) {
+  .site-nav {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .nav-links {
+    gap: 12px;
+  }
+
+  .register-layout {
+    grid-template-columns: 1fr;
+  }
+}

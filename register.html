@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>我要報名｜2026 Lumens 福委會音樂祭</title>
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <nav class="site-nav">
+    <a class="nav-logo" href="index.html">Lumens Music Festival 2026</a>
+    <div class="nav-links">
+      <a href="index.html#eventInfo">活動資訊</a>
+      <a href="index.html#contestants">參賽選手</a>
+      <a href="index.html#rules">活動規則</a>
+      <a class="nav-cta" href="register.html">我要報名</a>
+    </div>
+  </nav>
+
+  <header class="sub-hero">
+    <div class="sub-hero-inner">
+      <p class="eyebrow">Registration</p>
+      <h1>我要報名</h1>
+      <p>
+        報名完成後，資料將由福委會審核。審核通過後，將顯示於參賽選手區，並開放人氣應援投票。
+      </p>
+
+      <div class="hero-info">
+        <span>報名截止：2026/6/15</span>
+        <span>比賽日期：2026/7/29</span>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="section register-layout">
+      <div class="register-guide">
+        <h2>報名注意事項</h2>
+        <ul>
+          <li>報名不需要 Google 登入，請直接填寫表單送出。</li>
+          <li>姓名格式建議：陳羿廷(Isaac)。</li>
+          <li>所有欄位皆為必填。</li>
+          <li>個人照支援 JPG / PNG，單張照片需小於 5MB。</li>
+          <li>照片將用於活動網站選手卡片與活動宣傳。</li>
+          <li>送出後如需修改資料，請洽福委會管理員。</li>
+        </ul>
+
+      </div>
+
+      <div class="register-form-area">
+        <h2>報名表單</h2>
+        <p class="section-desc">
+          請完整填寫以下資料。送出後需經福委會審核才會公開顯示。
+        </p>
+
+        <form id="registrationForm" class="form-card">
+          <label>
+            部門
+            <input type="text" id="department" required />
+          </label>
+
+          <label>
+            工號
+            <input type="text" id="employeeId" required />
+          </label>
+
+          <label>
+            姓名（中 + 英）
+            <input type="text" id="name" placeholder="陳羿廷(Isaac)" required />
+          </label>
+
+          <label>
+            藝名
+            <input type="text" id="stageName" placeholder="A.K.A." required />
+          </label>
+
+          <label>
+            演唱歌曲
+            <input type="text" id="performanceItem" placeholder="歌手 - 歌名" required />
+          </label>
+
+          <label>
+            個人照
+            <input type="file" id="photo" accept="image/png, image/jpeg" required />
+          </label>
+
+          <label class="checkbox-label">
+            <input type="checkbox" id="photoConsent" required />
+            我同意福委會於本次活動網站與活動宣傳中使用此照片。
+          </label>
+
+          <button type="submit">送出報名</button>
+
+          <p id="registrationMessage" class="message"></p>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>© 2026 Lumens 福委會</p>
+  </footer>
+
+  <script type="module" src="register.js"></script>
+</body>
+</html>
