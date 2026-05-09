@@ -70,19 +70,38 @@ logoutButton.addEventListener("click", async () => {
   }
 });
 
-onAuthStateChanged(auth, (user) => {
+onAuthStateChanged(auth, async (user) => {
+  // 報名頁的 Anonymous Auth 可能會被瀏覽器保留。
+  // 首頁投票只接受 Google 帳號，所以匿名帳號在首頁視為未登入。
+  if (user && user.isAnonymous) {
+    currentUser = null;
+    userStatus.textContent = "尚未登入，投票請使用 Google 帳號登入";
+    loginButton.classList.remove("hidden");
+    logoutButton.classList.add("hidden");
+
+    try {
+      await signOut(auth);
+    } catch (error) {
+      console.warn("Anonymous sign out failed:", error);
+    }
+
+    return;
+  }
+
   currentUser = user;
 
-  if (user) {
+  if (user && user.email) {
     userStatus.textContent = `已登入：${user.email}`;
     loginButton.classList.add("hidden");
     logoutButton.classList.remove("hidden");
-    console.log("User logged in:", user.email);
+
+    console.log("Google user logged in:", user.email);
     console.log("User UID:", user.uid);
   } else {
-    userStatus.textContent = "尚未登入";
+    userStatus.textContent = "尚未登入，投票請使用 Google 帳號登入";
     loginButton.classList.remove("hidden");
     logoutButton.classList.add("hidden");
+
     console.log("User logged out");
   }
 });
@@ -140,6 +159,10 @@ function updateVotingStatusUI() {
 // 讀取已公開選手卡片
 // -----------------------------
 function listenToPublishedContestants() {
+  contestantsGrid.innerHTML = `
+  <p class="message">參賽選手載入中...</p>
+`;
+
   const contestantsRef = collection(db, "contestants");
   const q = query(contestantsRef, where("publishStatus", "==", true));
 
@@ -195,35 +218,48 @@ function renderContestants(contestants) {
         ? `A.K.A. ${escapeHtml(contestant.stageName)}`
         : "A.K.A. —";
 
-      return `
-        <article class="contestant-card">
-          <img
-            class="contestant-photo"
-            src="${escapeHtml(contestant.photoUrl)}"
-            alt="${escapeHtml(contestant.name)}"
-          />
+return `
+  <article class="contestant-card compact-contestant-card">
+    <div class="contestant-photo-wrap">
+      <img
+        class="contestant-photo"
+        src="${escapeHtml(contestant.photoUrl)}"
+        alt="${escapeHtml(contestant.name)}"
+        loading="lazy"
+      />
+    </div>
 
-          <div class="contestant-body">
-            <div class="contestant-number">No. ${number}</div>
-            <h3 class="contestant-name">${escapeHtml(contestant.name)}</h3>
-            <p class="contestant-stage">${stageName}</p>
-            <p class="contestant-performance">
-              ${escapeHtml(contestant.performanceItem)}
-            </p>
+    <div class="contestant-body contestant-body-centered">
+      <div class="contestant-meta-row">
+        <span class="contestant-number">No. ${number}</span>
+        <span class="contestant-department">
+          ${escapeHtml(contestant.department || "Lumens")}
+        </span>
+      </div>
 
-            <div class="vote-row">
-              <span class="vote-count">人氣票數：${contestant.voteCount || 0}</span>
-              <button
-                class="vote-button"
-                data-id="${contestant.id}"
-                ${votingStatus.canVote ? "" : "disabled"}
-              >
-                ${votingStatus.buttonText}
-              </button>
-            </div>
-          </div>
-        </article>
-      `;
+      <h3 class="contestant-name">${escapeHtml(contestant.name)}</h3>
+      <p class="contestant-stage">${stageName}</p>
+
+      <div class="song-block compact-song-block">
+        <div class="song-label">演唱歌曲</div>
+        <p class="contestant-performance">
+          ${escapeHtml(contestant.performanceItem)}
+        </p>
+      </div>
+
+      <div class="vote-row vote-row-centered compact-vote-row">
+        <span class="vote-count">人氣票數：${contestant.voteCount || 0}</span>
+        <button
+          class="vote-button compact-vote-button"
+          data-id="${contestant.id}"
+          ${votingStatus.canVote ? "" : "disabled"}
+        >
+          ${votingStatus.buttonText}
+        </button>
+      </div>
+    </div>
+  </article>
+`;
     })
     .join("");
 
@@ -247,10 +283,10 @@ function renderContestants(contestants) {
 // -----------------------------
 async function handleVote(contestantId, button) {
   try {
-    if (!currentUser) {
-      alert("請先使用 Google 登入後再投票。");
-      return;
-    }
+      if (!currentUser || !currentUser.email || currentUser.isAnonymous) {
+        alert("請先使用 Google 帳號登入後再投票。");
+        return;
+      }
 
     const now = new Date();
 
