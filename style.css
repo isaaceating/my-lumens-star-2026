@@ -1216,7 +1216,7 @@ footer {
 }
 
 .hero-slogan {
-  margin: 48px auto 48px;
+  margin: 24px auto 48px;
   color: #8fe8ff;
   font-size: clamp(28px, 4.4vw, 42px);
   line-height: 1.25;
