@@ -75,6 +75,7 @@ body {
 .section h2 {
   font-size: 32px;
   margin-bottom: 16px;
+  color: #ffd166;
 }
 
 .section-desc {
@@ -96,6 +97,7 @@ body {
   border: 1px solid rgba(255,255,255,0.14);
   border-radius: 24px;
   box-shadow: 0 18px 50px rgba(0,0,0,0.25);
+  padding: 18px 36px;
 }
 
 .info-card {
@@ -621,6 +623,7 @@ footer {
 
 .register-guide h2 {
   margin-top: 0;
+  color: #ffd166;
 }
 
 .register-guide ul {
@@ -883,5 +886,499 @@ footer {
   .compact-vote-button {
     padding: 11px 22px;
     font-size: 16px;
+  }
+}
+
+/* v1.6 Prize + Registration Preview Upgrade */
+.site-nav {
+  min-height: 76px;
+  padding: 16px 34px;
+}
+
+.nav-logo {
+  font-size: 18px;
+}
+
+.nav-links {
+  gap: 22px;
+}
+
+.nav-links a {
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.nav-cta {
+  padding: 11px 18px;
+}
+
+.prize-section {
+  padding-top: 76px;
+  padding-bottom: 58px;
+}
+
+.prize-header {
+  max-width: 760px;
+  margin: 0 auto 34px;
+  text-align: center;
+}
+
+.prize-header h2 {
+  margin: 8px 0 14px;
+  font-size: clamp(34px, 5vw, 54px);
+  line-height: 1.12;
+  color: #fff7d6;
+}
+
+.prize-title-line {
+  margin: 0;
+  color: #ffd166;
+  font-size: clamp(24px, 3vw, 34px);
+  font-weight: 900;
+  line-height: 1.25;
+  letter-spacing: 0.5px;
+}
+
+.prize-grid {
+  display: grid;
+  grid-template-columns: 1.25fr 1fr 1fr 1fr;
+  gap: 18px;
+}
+
+.prize-card {
+  position: relative;
+  overflow: hidden;
+  min-height: 180px;
+  padding: 26px 22px;
+  border-radius: 28px;
+  text-align: center;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(255, 209, 102, 0.22), transparent 46%),
+    linear-gradient(180deg, rgba(255,255,255,0.11), rgba(255,255,255,0.055));
+  border: 1px solid rgba(255,255,255,0.16);
+  box-shadow: 0 22px 60px rgba(0,0,0,0.28);
+}
+
+.prize-first {
+  background:
+    radial-gradient(circle at 50% 0%, rgba(255, 209, 102, 0.42), transparent 48%),
+    linear-gradient(180deg, rgba(255, 209, 102, 0.20), rgba(255,255,255,0.06));
+  border-color: rgba(255, 209, 102, 0.42);
+}
+
+.prize-rank {
+  display: inline-flex;
+  margin-bottom: 14px;
+  padding: 7px 14px;
+  border-radius: 999px;
+  color: #151515;
+  background: #ffd166;
+  font-weight: 900;
+}
+
+.prize-card strong {
+  display: block;
+  font-size: clamp(42px, 5vw, 68px);
+  line-height: 1;
+  color: #ffffff;
+  letter-spacing: -1px;
+}
+
+.prize-unit {
+  display: block;
+  margin-top: 8px;
+  color: #ddd8f5;
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.prize-participation .prize-rank {
+  background: #9be7ff;
+}
+
+.prize-message-card {
+  max-width: 720px;
+  margin: 28px auto 0;
+  padding: 24px 26px;
+  border-radius: 28px;
+  text-align: center;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(255, 209, 102, 0.16), transparent 52%),
+    linear-gradient(180deg, rgba(255,255,255,0.10), rgba(255,255,255,0.055));
+  border: 1px solid rgba(255,255,255,0.15);
+  box-shadow: 0 22px 58px rgba(0,0,0,0.26);
+}
+
+.prize-message-card p {
+  margin: 0 0 18px;
+  color: #fff7d6;
+  font-size: clamp(20px, 2.2vw, 28px);
+  font-weight: 900;
+  line-height: 1.55;
+}
+
+.register-prize-note {
+  margin-top: 24px;
+  padding: 20px;
+  border-radius: 22px;
+  background: rgba(255, 209, 102, 0.10);
+  border: 1px solid rgba(255, 209, 102, 0.24);
+}
+
+.register-prize-note h3 {
+  margin: 0 0 14px;
+  color: #ffd166;
+  font-size: 22px;
+}
+
+.mini-prize-list {
+  display: grid;
+  gap: 10px;
+}
+
+.mini-prize-list span {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: rgba(255,255,255,0.08);
+  color: #fff7d6;
+  font-weight: 800;
+}
+
+.card-preview-panel {
+  margin-top: 24px;
+}
+
+.card-preview-header {
+  margin-bottom: 14px;
+}
+
+.card-preview-header h3 {
+  margin: 6px 0 8px;
+  color: #ffd166;
+  font-size: 24px;
+}
+
+.card-preview-header p {
+  margin: 0;
+  color: #cfc9e8;
+  line-height: 1.7;
+}
+
+.preview-contestant-card {
+  margin-top: 16px;
+}
+
+.preview-photo-wrap {
+  position: relative;
+}
+
+.preview-photo-placeholder {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: #cfc9e8;
+  font-size: 20px;
+  font-weight: 900;
+  line-height: 1.55;
+  text-align: center;
+  background:
+    radial-gradient(circle at center, rgba(155, 231, 255, 0.12), transparent 50%),
+    rgba(255,255,255,0.06);
+}
+
+#previewPhoto {
+  opacity: 0;
+}
+
+#previewPhoto.is-visible {
+  opacity: 1;
+}
+
+@media (max-width: 980px) {
+  .prize-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .prize-first {
+    grid-column: span 2;
+  }
+}
+
+@media (max-width: 620px) {
+  .site-nav {
+    padding: 14px 20px;
+  }
+
+  .nav-links a {
+    font-size: 15px;
+  }
+
+  .prize-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .prize-first {
+    grid-column: auto;
+  }
+
+  .prize-card {
+    min-height: 150px;
+  }
+}
+
+/* v1.7 Hero Copy + Deadline Pill Upgrade */
+.hero {
+  min-height: 540px;
+  padding: 64px 20px 54px;
+}
+
+.hero-overlay {
+  max-width: 980px;
+}
+
+.hero .eyebrow {
+  margin: 0 0 22px;
+  color: #ffd166;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 3px;
+}
+
+.hero-title {
+  margin: 0;
+  color: #ffd166;
+  font-size: clamp(32px, 7vw, 42px);
+  line-height: 1.05;
+  font-weight: 900;
+  letter-spacing: -1.5px;
+}
+
+.hero-subtitle {
+  margin-top: 36px;
+  color: #ffd166;
+  font-size: clamp(42px, 6vw, 72px);
+  line-height: 1.05;
+  font-weight: 900;
+  letter-spacing: -1px;
+}
+
+.hero-slogan {
+  margin: 48px auto 48px;
+  color: #8fe8ff;
+  font-size: clamp(28px, 4.4vw, 42px);
+  line-height: 1.25;
+  font-weight: 900;
+}
+
+.hero-desc {
+  margin: 28px auto 0;
+  max-width: 760px;
+  color: #f3eeff;
+  font-size: clamp(17px, 2vw, 20px);
+  line-height: 1.75;
+  font-weight: 700;
+}
+
+.hero-info {
+  margin-top: 28px;
+  gap: 14px;
+}
+
+.hero-info span {
+  padding: 13px 22px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.09);
+  border: 1px solid rgba(255,255,255,0.22);
+  color: #ffd166;
+  font-size: 16px;
+  font-weight: 900;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);
+}
+
+.hero-info .hero-info-deadline {
+  color: #151515;
+  background: linear-gradient(135deg, #ffd166, #ff9f1c);
+  border-color: rgba(255, 209, 102, 0.65);
+  box-shadow: 0 12px 32px rgba(255, 159, 28, 0.18);
+}
+
+.hero-actions {
+  margin-top: 32px;
+}
+
+.hero-actions .primary-link-button,
+.hero-actions .secondary-link-button {
+  min-width: 132px;
+  padding: 15px 24px;
+  font-size: 17px;
+}
+
+@media (max-width: 620px) {
+  .hero {
+    min-height: auto;
+    padding: 52px 18px 46px;
+  }
+
+  .hero .eyebrow {
+    font-size: 12px;
+    letter-spacing: 2px;
+  }
+
+  .hero-title {
+    font-size: 44px;
+  }
+
+  .hero-subtitle {
+    font-size: 40px;
+  }
+
+  .hero-slogan {
+    font-size: 27px;
+  }
+
+  .hero-desc {
+    font-size: 16px;
+  }
+
+  .hero-info {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .hero-info span {
+    width: min(100%, 280px);
+  }
+}
+
+/* =========================
+   Hero CTA Button Effect
+   我要報名按鈕效果
+========================= */
+
+.hero-actions .primary-link-button {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  animation: heroCtaPulse 2.8s ease-in-out infinite;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, filter 0.25s ease;
+}
+
+.hero-actions .primary-link-button::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -80%;
+  width: 55%;
+  height: 100%;
+  background: linear-gradient(
+    120deg,
+    transparent,
+    rgba(255, 255, 255, 0.5),
+    transparent
+  );
+  transform: skewX(-20deg);
+  z-index: 1;
+}
+
+.hero-actions .primary-link-button:hover {
+  transform: translateY(-3px) scale(1.03);
+  filter: brightness(1.06);
+  box-shadow:
+    0 16px 34px rgba(255, 203, 72, 0.38),
+    0 0 28px rgba(255, 203, 72, 0.28);
+}
+
+.hero-actions .primary-link-button:hover::before {
+  animation: heroCtaShine 0.85s ease;
+}
+
+@keyframes heroCtaPulse {
+  0%,
+  100% {
+    box-shadow:
+      0 10px 28px rgba(255, 203, 72, 0.34),
+      0 0 10px rgba(255, 203, 72, 0.26),
+      0 0 0 0 rgba(255, 203, 72, 0.45);
+  }
+
+  50% {
+    box-shadow:
+      0 16px 40px rgba(255, 203, 72, 0.52),
+      0 0 30px rgba(255, 203, 72, 0.52),
+      0 0 0 10px rgba(255, 203, 72, 0.12);
+  }
+}
+
+@keyframes heroCtaShine {
+  0% {
+    left: -80%;
+  }
+
+  100% {
+    left: 130%;
+  }
+}
+
+/* =========================
+   First Prize Card Effect
+   第一名獎金卡片效果
+========================= */
+
+.prize-card.prize-first {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  border-color: rgba(255, 214, 102, 0.72);
+  box-shadow:
+    0 20px 52px rgba(0, 0, 0, 0.32),
+    0 0 38px rgba(255, 214, 102, 0.24);
+  animation: firstPrizeFloat 2s ease-in-out infinite;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
+.prize-card.prize-first::before {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(255, 229, 135, 0.34), transparent 42%),
+    linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.18), transparent);
+  opacity: 0.9;
+  pointer-events: none;
+  z-index: -1;
+}
+
+.prize-card.prize-first::after {
+  content: "★";
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  font-size: 24px;
+  color: rgba(255, 226, 126, 0.98);
+  text-shadow:
+    0 0 12px rgba(255, 226, 126, 0.75),
+    0 0 26px rgba(255, 226, 126, 0.45);
+}
+
+.prize-card.prize-first:hover {
+  transform: translateY(-8px) scale(1.035);
+  border-color: rgba(255, 230, 140, 0.95);
+  box-shadow:
+    0 26px 64px rgba(0, 0, 0, 0.38),
+    0 0 52px rgba(255, 214, 102, 0.42);
+}
+
+@keyframes firstPrizeFloat {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-8px);
   }
 }

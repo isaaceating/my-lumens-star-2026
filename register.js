@@ -39,11 +39,21 @@ const storage = getStorage(app);
 let currentUser = null;
 let anonymousAuthReady = false;
 
-const REGISTRATION_DEADLINE = new Date("2026-06-15T23:59:59+08:00");
+const REGISTRATION_DEADLINE = new Date("2026-05-31T23:59:59+08:00");
 
 // DOM
 const registrationForm = document.getElementById("registrationForm");
 const registrationMessage = document.getElementById("registrationMessage");
+
+// Live preview DOM
+const previewDepartment = document.getElementById("previewDepartment");
+const previewName = document.getElementById("previewName");
+const previewStageName = document.getElementById("previewStageName");
+const previewPerformanceItem = document.getElementById("previewPerformanceItem");
+const previewPhoto = document.getElementById("previewPhoto");
+const previewPhotoPlaceholder = document.getElementById("previewPhotoPlaceholder");
+
+let previewPhotoObjectUrl = null;
 
 // -----------------------------
 // Anonymous Auth for Registration
@@ -71,6 +81,60 @@ onAuthStateChanged(auth, (user) => {
     console.log("Anonymous registration user not ready");
   }
 });
+
+// -----------------------------
+// 選手卡片即時預覽
+// -----------------------------
+function initCardPreview() {
+  const fields = [
+    { id: "department", target: previewDepartment, fallback: "部門" },
+    { id: "name", target: previewName, fallback: "姓名" },
+    {
+      id: "stageName",
+      target: previewStageName,
+      fallback: "A.K.A. 藝名",
+      formatter: (value) => value ? `A.K.A. ${value}` : "A.K.A. 藝名"
+    },
+    { id: "performanceItem", target: previewPerformanceItem, fallback: "歌手 - 歌名" }
+  ];
+
+  fields.forEach(({ id, target, fallback, formatter }) => {
+    const input = document.getElementById(id);
+    if (!input || !target) return;
+
+    const update = () => {
+      const value = input.value.trim();
+      target.textContent = formatter ? formatter(value) : (value || fallback);
+    };
+
+    input.addEventListener("input", update);
+    update();
+  });
+
+  const photoInput = document.getElementById("photo");
+  if (!photoInput || !previewPhoto || !previewPhotoPlaceholder) return;
+
+  photoInput.addEventListener("change", () => {
+    const file = photoInput.files[0];
+
+    if (previewPhotoObjectUrl) {
+      URL.revokeObjectURL(previewPhotoObjectUrl);
+      previewPhotoObjectUrl = null;
+    }
+
+    if (!file || !file.type.startsWith("image/")) {
+      previewPhoto.removeAttribute("src");
+      previewPhoto.classList.remove("is-visible");
+      previewPhotoPlaceholder.classList.remove("hidden");
+      return;
+    }
+
+    previewPhotoObjectUrl = URL.createObjectURL(file);
+    previewPhoto.src = previewPhotoObjectUrl;
+    previewPhoto.classList.add("is-visible");
+    previewPhotoPlaceholder.classList.add("hidden");
+  });
+}
 
 // -----------------------------
 // 報名送出
@@ -157,6 +221,7 @@ registrationForm.addEventListener("submit", async (event) => {
     await setDoc(contestantRef, contestantData);
 
     registrationForm.reset();
+    resetCardPreview();
     registrationMessage.textContent = "報名成功！資料將由福委會審核後公開顯示。";
 
     console.log("Registration success:", contestantId);
@@ -195,7 +260,29 @@ function getFileExtension(fileName) {
   return "jpg";
 }
 
+function resetCardPreview() {
+  if (previewDepartment) previewDepartment.textContent = "部門";
+  if (previewName) previewName.textContent = "姓名";
+  if (previewStageName) previewStageName.textContent = "A.K.A. 藝名";
+  if (previewPerformanceItem) previewPerformanceItem.textContent = "歌手 - 歌名";
+
+  if (previewPhotoObjectUrl) {
+    URL.revokeObjectURL(previewPhotoObjectUrl);
+    previewPhotoObjectUrl = null;
+  }
+
+  if (previewPhoto) {
+    previewPhoto.removeAttribute("src");
+    previewPhoto.classList.remove("is-visible");
+  }
+
+  if (previewPhotoPlaceholder) {
+    previewPhotoPlaceholder.classList.remove("hidden");
+  }
+}
+
 // 啟動匿名報名身份
+initCardPreview();
 initAnonymousAuth();
 
 console.log("Register page with Anonymous Auth loaded.");

@@ -12,23 +12,22 @@
   <nav class="site-nav">
     <a class="nav-logo" href="index.html">2026 My Lumens Star</a>
     <div class="nav-links">
-      <a href="index.html#eventInfo">活動資訊</a>
-      <a href="index.html#contestants">參賽選手</a>
-      <a href="index.html#rules">活動規則</a>
+      <a href="index.html#eventInfo">重要時程</a>
+      <a href="index.html#contestants">參賽歌手</a>
+      <a href="index.html#rules">比賽規則</a>
       <a class="nav-cta" href="register.html">我要報名</a>
     </div>
   </nav>
 
   <header class="sub-hero">
-    <div class="sub-hero-inner">
-      <p class="eyebrow">Registration</p>
+    <div class="sub-hero-inner">      
       <h1>我要報名</h1>
       <p>
         報名完成後，資料將由福委會審核。審核通過後，將顯示於參賽選手區，並開放人氣應援投票。
       </p>
 
       <div class="hero-info">
-        <span>報名截止：2026/6/15</span>
+        <span>報名截止：2026/5/31</span>
         <span>比賽日期：2026/7/29</span>
       </div>
     </div>
@@ -39,13 +38,47 @@
       <div class="register-guide">
         <h2>報名注意事項</h2>
         <ul>
-          <li>報名不需要 Google 登入，請直接填寫表單送出。</li>
-          <li>姓名格式建議：陳羿廷(Isaac)。</li>
+          <li>報名不需要登入，請直接填寫表單送出。</li>
           <li>所有欄位皆為必填。</li>
+          <li>請務必填寫歌名與歌手，以防歌曲卡帶混淆。</li>                  
           <li>個人照支援 JPG / PNG，單張照片需小於 5MB。</li>
           <li>照片將用於活動網站選手卡片與活動宣傳。</li>
           <li>送出後如需修改資料，請洽福委會管理員。</li>
         </ul>
+        <div class="card-preview-panel">
+          <div class="card-preview-header">            
+            <h3>歌手卡片預覽</h3>            
+          </div>
+
+          <article class="contestant-card compact-contestant-card preview-contestant-card">
+            <div class="contestant-photo-wrap preview-photo-wrap">
+              <img
+                id="previewPhoto"
+                class="contestant-photo"
+                src=""
+                alt="選手照片預覽"
+              />
+              <div id="previewPhotoPlaceholder" class="preview-photo-placeholder">
+                上傳照片後<br />即時預覽
+              </div>
+            </div>
+
+            <div class="contestant-body contestant-body-centered">
+              <div class="contestant-meta-row">
+                <span class="contestant-number">No. 01</span>
+                <span id="previewDepartment" class="contestant-department">部門</span>
+              </div>
+
+              <h3 id="previewName" class="contestant-name">姓名</h3>
+              <p id="previewStageName" class="contestant-stage">A.K.A. 藝名</p>
+
+              <div class="compact-song-block">
+                <div class="song-label">演唱歌曲</div>
+                <p id="previewPerformanceItem" class="contestant-performance">歌手 - 歌名</p>
+              </div>
+            </div>
+          </article>
+        </div>
 
       </div>
 
