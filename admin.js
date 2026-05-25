@@ -20,7 +20,6 @@ import {
   serverTimestamp
 } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
 
-// TODO: 換成你 Firebase Console 裡的完整 config
 const firebaseConfig = {
   apiKey: "AIzaSyBlj362N4O6ERqgFziQ4Gg9W7SEyquKb0g",
   authDomain: "my-lumens-star-2026.firebaseapp.com",
@@ -65,7 +64,7 @@ const editPerformanceItem = document.getElementById("editPerformanceItem");
 const editManualOrder = document.getElementById("editManualOrder");
 
 // -----------------------------
-// Login
+// Login / Logout
 // -----------------------------
 adminLoginButton.addEventListener("click", async () => {
   try {
@@ -86,7 +85,6 @@ adminLogoutButton.addEventListener("click", async () => {
 });
 
 refreshAdminDataButton.addEventListener("click", async () => {
-  if (!isCurrentUserAdmin) return;
   await loadContestantsForAdmin();
 });
 
@@ -94,12 +92,15 @@ onAuthStateChanged(auth, async (user) => {
   currentUser = user;
   isCurrentUserAdmin = false;
 
+  adminContent.classList.remove("hidden");
+
   if (!user) {
     adminUserStatus.textContent = "尚未登入";
-    adminAccessStatus.textContent = "";
+    adminAccessStatus.textContent = "目前為瀏覽模式。登入並具備管理員權限後，才可以編輯資料。";
     adminLoginButton.classList.remove("hidden");
     adminLogoutButton.classList.add("hidden");
-    adminContent.classList.add("hidden");
+
+    await loadContestantsForAdmin();
     return;
   }
 
@@ -107,20 +108,18 @@ onAuthStateChanged(auth, async (user) => {
   adminLoginButton.classList.add("hidden");
   adminLogoutButton.classList.remove("hidden");
 
-  console.log("Admin user:", user.email);
-  console.log("Admin UID:", user.uid);
-
   const adminResult = await checkAdmin(user.uid);
 
   if (!adminResult) {
-    adminAccessStatus.textContent = "你目前不是管理員，無法使用此頁面。";
-    adminContent.classList.add("hidden");
+    adminAccessStatus.textContent = "目前為瀏覽模式。此帳號沒有管理員權限，無法編輯資料。";
+    isCurrentUserAdmin = false;
+
+    await loadContestantsForAdmin();
     return;
   }
 
   isCurrentUserAdmin = true;
-  adminAccessStatus.textContent = "管理員驗證成功。";
-  adminContent.classList.remove("hidden");
+  adminAccessStatus.textContent = "管理員模式已啟用，可以編輯資料。";
 
   await loadContestantsForAdmin();
 });
@@ -146,11 +145,27 @@ async function checkAdmin(uid) {
   }
 }
 
+function requireAdminPermission() {
+  if (!currentUser) {
+    alert("請先使用 Google 登入。");
+    return false;
+  }
+
+  if (!isCurrentUserAdmin) {
+    alert("此帳號沒有管理員權限，無法編輯資料。");
+    return false;
+  }
+
+  return true;
+}
+
 // -----------------------------
 // Load Contestants
 // -----------------------------
 async function loadContestantsForAdmin() {
   try {
+    adminContent.classList.remove("hidden");
+
     adminContestantsTable.innerHTML = `
       <tr>
         <td colspan="8">資料讀取中...</td>
@@ -218,12 +233,55 @@ function renderAdminContestants(contestants) {
 
       const voteCount = contestant.voteCount || 0;
 
+      const orderCell = isCurrentUserAdmin
+        ? `
+          <input
+            class="admin-order-input"
+            type="number"
+            value="${manualOrder}"
+            data-id="${contestant.id}"
+          />
+        `
+        : `
+          <span>${manualOrder}</span>
+        `;
+
+      const actionCell = isCurrentUserAdmin
+        ? `
+          <div class="admin-row-actions">
+            <button
+              class="edit-contestant-button admin-edit-button"
+              data-id="${contestant.id}"
+            >
+              編輯
+            </button>
+
+            <button
+              class="toggle-publish-button"
+              data-id="${contestant.id}"
+              data-current="${isPublished}"
+            >
+              ${isPublished ? "隱藏" : "公開"}
+            </button>
+
+            <button
+              class="save-order-button secondary-button"
+              data-id="${contestant.id}"
+            >
+              儲存排序
+            </button>
+          </div>
+        `
+        : `
+          <span class="admin-small-text">僅管理員可編輯</span>
+        `;
+
       return `
         <tr>
           <td>
             <img
               class="admin-photo"
-              src="${escapeHtml(contestant.photoUrl)}"
+              src="${escapeHtml(contestant.photoUrl || "")}"
               alt="${escapeHtml(contestant.name || "")}"
             />
           </td>
@@ -235,12 +293,7 @@ function renderAdminContestants(contestants) {
           </td>
 
           <td>
-            <input
-              class="admin-order-input"
-              type="number"
-              value="${manualOrder}"
-              data-id="${contestant.id}"
-            />
+            ${orderCell}
           </td>
 
           <td>
@@ -262,29 +315,7 @@ function renderAdminContestants(contestants) {
           </td>
 
           <td>
-            <div class="admin-row-actions">
-              <button
-                class="edit-contestant-button admin-edit-button"
-                data-id="${contestant.id}"
-              >
-                編輯
-              </button>
-
-              <button
-                class="toggle-publish-button"
-                data-id="${contestant.id}"
-                data-current="${isPublished}"
-              >
-                ${isPublished ? "隱藏" : "公開"}
-              </button>
-
-              <button
-                class="save-order-button secondary-button"
-                data-id="${contestant.id}"
-              >
-                儲存排序
-              </button>
-            </div>
+            ${actionCell}
           </td>
         </tr>
       `;
@@ -295,8 +326,12 @@ function renderAdminContestants(contestants) {
 }
 
 function bindAdminRowEvents() {
+  if (!isCurrentUserAdmin) return;
+
   document.querySelectorAll(".edit-contestant-button").forEach((button) => {
     button.addEventListener("click", () => {
+      if (!requireAdminPermission()) return;
+
       const contestantId = button.dataset.id;
       openEditModal(contestantId);
     });
@@ -304,6 +339,8 @@ function bindAdminRowEvents() {
 
   document.querySelectorAll(".toggle-publish-button").forEach((button) => {
     button.addEventListener("click", async () => {
+      if (!requireAdminPermission()) return;
+
       const contestantId = button.dataset.id;
       const currentStatus = button.dataset.current === "true";
 
@@ -313,6 +350,8 @@ function bindAdminRowEvents() {
 
   document.querySelectorAll(".save-order-button").forEach((button) => {
     button.addEventListener("click", async () => {
+      if (!requireAdminPermission()) return;
+
       const contestantId = button.dataset.id;
       const input = document.querySelector(`.admin-order-input[data-id="${contestantId}"]`);
 
@@ -334,6 +373,8 @@ function bindAdminRowEvents() {
 // Edit Modal
 // -----------------------------
 function openEditModal(contestantId) {
+  if (!requireAdminPermission()) return;
+
   const contestant = adminContestantsCache.find((item) => item.id === contestantId);
 
   if (!contestant) {
@@ -373,10 +414,7 @@ editModal.addEventListener("click", (event) => {
 editContestantForm.addEventListener("submit", async (event) => {
   event.preventDefault();
 
-  if (!isCurrentUserAdmin) {
-    alert("你不是管理員，無法更新資料。");
-    return;
-  }
+  if (!requireAdminPermission()) return;
 
   const contestantId = editContestantId.value;
   const name = editName.value.trim();
@@ -442,6 +480,8 @@ editContestantForm.addEventListener("submit", async (event) => {
 // Update Actions
 // -----------------------------
 async function togglePublishStatus(contestantId, nextStatus) {
+  if (!requireAdminPermission()) return;
+
   try {
     const label = nextStatus ? "公開" : "隱藏";
     const confirmed = confirm(`確定要${label}這位選手嗎？`);
@@ -467,6 +507,8 @@ async function togglePublishStatus(contestantId, nextStatus) {
 }
 
 async function updateManualOrder(contestantId, manualOrder) {
+  if (!requireAdminPermission()) return;
+
   try {
     const contestantRef = doc(db, "contestants", contestantId);
 
@@ -500,4 +542,4 @@ function escapeHtml(value) {
     .replaceAll("'", "&#039;");
 }
 
-console.log("Admin page v1.3 loaded.");
+console.log("Admin page v1.4 public-view-admin-edit loaded.");
