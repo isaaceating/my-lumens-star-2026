@@ -12,6 +12,7 @@ import {
   getFirestore,
   collection,
   doc,
+  getDoc,
   query,
   where,
   onSnapshot,
@@ -42,12 +43,15 @@ const VOTING_TEST_MODE = false;
 const VOTING_START = new Date("2026-06-20T00:00:00+08:00");
 const VOTING_END = new Date("2026-07-28T23:59:59+08:00");
 
+const REGISTRATION_AUTO_CLOSE_TIME = new Date("2026-06-01T00:00:00+08:00");
+
 // DOM
 const loginButton = document.getElementById("loginButton");
 const logoutButton = document.getElementById("logoutButton");
 const userStatus = document.getElementById("userStatus");
 const contestantsGrid = document.getElementById("contestantsGrid");
 const votingStatusText = document.getElementById("votingStatusText");
+const registrationLinks = document.querySelectorAll(".registration-link");
 
 // -----------------------------
 // Google Login
@@ -107,6 +111,91 @@ onAuthStateChanged(auth, async (user) => {
 });
 
 // -----------------------------
+// Registration Status
+// -----------------------------
+function getAutoRegistrationStatus() {
+  const now = new Date();
+
+  return {
+    isOpen: now < REGISTRATION_AUTO_CLOSE_TIME,
+    source: "auto"
+  };
+}
+
+async function getRegistrationStatus() {
+  try {
+    const settingsRef = doc(db, "settings", "registration");
+    const settingsSnap = await getDoc(settingsRef);
+
+    if (settingsSnap.exists()) {
+      const data = settingsSnap.data();
+
+      return {
+        isOpen: data.isOpen === true,
+        source: "admin"
+      };
+    }
+
+    return getAutoRegistrationStatus();
+  } catch (error) {
+    console.error("Load registration status failed:", error);
+    return getAutoRegistrationStatus();
+  }
+}
+
+function renderRegistrationLinks(registrationStatus) {
+  registrationLinks.forEach((link) => {
+    if (!link.dataset.originalText) {
+      link.dataset.originalText = link.textContent;
+    }
+
+    if (registrationStatus.isOpen) {
+      link.textContent = link.dataset.originalText || "我要報名";
+      link.setAttribute("href", "register.html");
+      link.classList.remove("registration-closed-link");
+      link.setAttribute("aria-disabled", "false");
+      return;
+    }
+
+    link.textContent = "報名已截止";
+    link.removeAttribute("href");
+    link.classList.add("registration-closed-link");
+    link.setAttribute("aria-disabled", "true");
+  });
+}
+
+async function updateRegistrationLinks() {
+  const registrationStatus = await getRegistrationStatus();
+  renderRegistrationLinks(registrationStatus);
+}
+
+function listenToRegistrationStatus() {
+  const settingsRef = doc(db, "settings", "registration");
+
+  onSnapshot(
+    settingsRef,
+    (snapshot) => {
+      if (snapshot.exists()) {
+        const data = snapshot.data();
+
+        renderRegistrationLinks({
+          isOpen: data.isOpen === true,
+          source: "admin"
+        });
+
+        return;
+      }
+
+      renderRegistrationLinks(getAutoRegistrationStatus());
+    },
+    (error) => {
+      console.error("Listen registration status failed:", error);
+      updateRegistrationLinks();
+    }
+  );
+}
+
+// -----------------------------
 // Voting Status
 // -----------------------------
 function getVotingStatus() {
@@ -160,8 +249,8 @@ function updateVotingStatusUI() {
 // -----------------------------
 function listenToPublishedContestants() {
   contestantsGrid.innerHTML = `
-  <p class="message">參賽選手載入中...</p>
-`;
+    <p class="message">參賽選手載入中...</p>
+  `;
 
   const contestantsRef = collection(db, "contestants");
   const q = query(contestantsRef, where("publishStatus", "==", true));
@@ -218,48 +307,48 @@ function renderContestants(contestants) {
         ? `A.K.A. ${escapeHtml(contestant.stageName)}`
         : "A.K.A. —";
 
-return `
-  <article class="contestant-card compact-contestant-card">
-    <div class="contestant-photo-wrap">
-      <img
-        class="contestant-photo"
-        src="${escapeHtml(contestant.photoUrl)}"
-        alt="${escapeHtml(contestant.name)}"
-        loading="lazy"
-      />
-    </div>
+      return `
+        <article class="contestant-card compact-contestant-card">
+          <div class="contestant-photo-wrap">
+            <img
+              class="contestant-photo"
+              src="${escapeHtml(contestant.photoUrl)}"
+              alt="${escapeHtml(contestant.name)}"
+              loading="lazy"
+            />
+          </div>
 
-    <div class="contestant-body contestant-body-centered">
-      <div class="contestant-meta-row">
-        <span class="contestant-number">No. ${number}</span>
-        <span class="contestant-department">
-          ${escapeHtml(contestant.department || "Lumens")}
-        </span>
-      </div>
+          <div class="contestant-body contestant-body-centered">
+            <div class="contestant-meta-row">
+              <span class="contestant-number">No. ${number}</span>
+              <span class="contestant-department">
+                ${escapeHtml(contestant.department || "Lumens")}
+              </span>
+            </div>
 
-      <h3 class="contestant-name">${escapeHtml(contestant.name)}</h3>
-      <p class="contestant-stage">${stageName}</p>
+            <h3 class="contestant-name">${escapeHtml(contestant.name)}</h3>
+            <p class="contestant-stage">${stageName}</p>
 
-      <div class="song-block compact-song-block">
-        <div class="song-label">演唱歌曲</div>
-        <p class="contestant-performance">
-          ${escapeHtml(contestant.performanceItem)}
-        </p>
-      </div>
+            <div class="song-block compact-song-block">
+              <div class="song-label">演唱歌曲</div>
+              <p class="contestant-performance">
+                ${escapeHtml(contestant.performanceItem)}
+              </p>
+            </div>
 
-      <div class="vote-row vote-row-centered compact-vote-row">
-        <span class="vote-count">人氣票數：${contestant.voteCount || 0}</span>
-        <button
-          class="vote-button compact-vote-button"
-          data-id="${contestant.id}"
-          ${votingStatus.canVote ? "" : "disabled"}
-        >
-          ${votingStatus.buttonText}
-        </button>
-      </div>
-    </div>
-  </article>
-`;
+            <div class="vote-row vote-row-centered compact-vote-row">
+              <span class="vote-count">人氣票數：${contestant.voteCount || 0}</span>
+              <button
+                class="vote-button compact-vote-button"
+                data-id="${contestant.id}"
+                ${votingStatus.canVote ? "" : "disabled"}
+              >
+                ${votingStatus.buttonText}
+              </button>
+            </div>
+          </div>
+        </article>
+      `;
     })
     .join("");
 
@@ -283,10 +372,10 @@ return `
 // -----------------------------
 async function handleVote(contestantId, button) {
   try {
-      if (!currentUser || !currentUser.email || currentUser.isAnonymous) {
-        alert("請先使用 Google 帳號登入後再投票。");
-        return;
-      }
+    if (!currentUser || !currentUser.email || currentUser.isAnonymous) {
+      alert("請先使用 Google 帳號登入後再投票。");
+      return;
+    }
 
     const now = new Date();
 
@@ -384,7 +473,8 @@ function escapeHtml(value) {
 }
 
 // 啟動
+listenToRegistrationStatus();
 updateVotingStatusUI();
 listenToPublishedContestants();
 
-console.log("Homepage app loaded.");
+console.log("Homepage app v1.6 realtime-registration-status loaded.");

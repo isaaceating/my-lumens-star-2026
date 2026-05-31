@@ -10,13 +10,14 @@
 </head>
 <body>
   <nav class="site-nav">
-  <a class="nav-logo" href="index.html">2026 My Lumens Star</a>
-  <div class="nav-links">
-    <a href="index.html">首頁</a>
-    <a href="register.html">報名頁</a>
-    <a class="nav-cta" href="admin.html">Admin</a>
-  </div>
-</nav>
+    <a class="nav-logo" href="index.html">2026 My Lumens Star</a>
+    <div class="nav-links">
+      <a href="index.html">首頁</a>
+      <a href="register.html">報名頁</a>
+      <a class="nav-cta" href="admin.html">Admin</a>
+    </div>
+  </nav>
+
   <main class="admin-page">
     <section class="section admin-section">
       <div class="section-title-row">
@@ -29,8 +30,8 @@
 
         <div class="admin-actions">
           <a class="admin-link-button" href="index.html">回到前台</a>
-          <button id="adminLoginButton" class="secondary-button">Google 登入</button>
-          <button id="adminLogoutButton" class="secondary-button hidden">登出</button>
+          <button type="button" id="adminLoginButton" class="secondary-button">Google 登入</button>
+          <button type="button" id="adminLogoutButton" class="secondary-button hidden">登出</button>
         </div>
       </div>
 
@@ -40,11 +41,26 @@
       <div id="adminContent" class="hidden">
         <div class="admin-toolbar">
           <div>
+            <strong>報名狀態控制</strong>
+            <p class="section-desc">
+              系統預設會在 2026/6/1 00:00 自動關閉；期限後仍可由 Admin 手動開啟或關閉。
+            </p>
+            <p id="registrationStatusText" class="user-status">報名狀態讀取中...</p>
+            <p id="registrationSettingsMessage" class="message"></p>
+          </div>
+
+          <button type="button" id="toggleRegistrationButton" class="secondary-button">
+            讀取中...
+          </button>
+        </div>
+
+        <div class="admin-toolbar">
+          <div>
             <strong>報名者列表</strong>
             <p class="section-desc">公開狀態與排序調整後會立即影響前台顯示。</p>
           </div>
 
-          <button id="refreshAdminDataButton" class="secondary-button">重新整理</button>
+          <button type="button" id="refreshAdminDataButton" class="secondary-button">重新整理</button>
         </div>
 
         <div class="admin-table-wrap">
@@ -71,58 +87,59 @@
       </div>
     </section>
   </main>
-<div id="editModal" class="edit-modal hidden">
-  <div class="edit-modal-card">
-    <div class="edit-modal-header">
-      <div>
-        <h2>編輯選手資料</h2>
-        <p class="section-desc">修改後會立即同步到前台選手卡片。</p>
+
+  <div id="editModal" class="edit-modal hidden">
+    <div class="edit-modal-card">
+      <div class="edit-modal-header">
+        <div>
+          <h2>編輯選手資料</h2>
+          <p class="section-desc">修改後會立即同步到前台選手卡片。</p>
+        </div>
+        <button type="button" id="closeEditModalButton" class="secondary-button">關閉</button>
       </div>
-      <button id="closeEditModalButton" class="secondary-button">關閉</button>
+
+      <form id="editContestantForm" class="edit-form">
+        <input type="hidden" id="editContestantId" />
+
+        <label>
+          姓名
+          <input type="text" id="editName" required />
+        </label>
+
+        <label>
+          藝名
+          <input type="text" id="editStageName" />
+        </label>
+
+        <label>
+          部門
+          <input type="text" id="editDepartment" required />
+        </label>
+
+        <label>
+          工號
+          <input type="text" id="editEmployeeId" required />
+        </label>
+
+        <label>
+          演唱歌曲
+          <input type="text" id="editPerformanceItem" required />
+        </label>
+
+        <label>
+          排序
+          <input type="number" id="editManualOrder" required />
+        </label>
+
+        <div class="edit-form-actions">
+          <button type="submit">儲存修改</button>
+          <button type="button" id="cancelEditButton" class="secondary-button">取消</button>
+        </div>
+
+        <p id="editMessage" class="message"></p>
+      </form>
     </div>
-
-    <form id="editContestantForm" class="edit-form">
-      <input type="hidden" id="editContestantId" />
-
-      <label>
-        姓名
-        <input type="text" id="editName" required />
-      </label>
-
-      <label>
-        藝名
-        <input type="text" id="editStageName" />
-      </label>
-
-      <label>
-        部門
-        <input type="text" id="editDepartment" required />
-      </label>
-
-      <label>
-        工號
-        <input type="text" id="editEmployeeId" required />
-      </label>
-
-      <label>
-        演唱歌曲
-        <input type="text" id="editPerformanceItem" required />
-      </label>
-
-      <label>
-        排序
-        <input type="number" id="editManualOrder" required />
-      </label>
-
-      <div class="edit-form-actions">
-        <button type="submit">儲存修改</button>
-        <button type="button" id="cancelEditButton" class="secondary-button">取消</button>
-      </div>
-
-      <p id="editMessage" class="message"></p>
-    </form>
   </div>
-</div>
 
   <script type="module" src="admin.js"></script>
 </body>

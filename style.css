@@ -1431,3 +1431,16 @@ footer {
     transform: translateY(-8px);
   }
 }
+
+.registration-closed-link {
+  opacity: 0.55;
+  cursor: not-allowed;
+  filter: grayscale(0.35);
+  pointer-events: none;
+  animation: none !important;
+}
+
+.registration-closed-link:hover {
+  transform: none !important;
+  filter: grayscale(0.35);
+}

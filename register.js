@@ -10,6 +10,7 @@ import {
   getFirestore,
   collection,
   doc,
+  getDoc,
   setDoc,
   serverTimestamp
 } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
@@ -38,8 +39,9 @@ const storage = getStorage(app);
 
 let currentUser = null;
 let anonymousAuthReady = false;
+let registrationIsOpen = false;
 
-const REGISTRATION_DEADLINE = new Date("2026-05-31T23:59:59+08:00");
+const REGISTRATION_AUTO_CLOSE_TIME = new Date("2026-06-01T00:00:00+08:00");
 
 // DOM
 const registrationForm = document.getElementById("registrationForm");
@@ -56,11 +58,82 @@ const previewPhotoPlaceholder = document.getElementById("previewPhotoPlaceholder
 let previewPhotoObjectUrl = null;
 
 // -----------------------------
+// Registration Status
+// -----------------------------
+async function getRegistrationStatus() {
+  try {
+    const settingsRef = doc(db, "settings", "registration");
+    const settingsSnap = await getDoc(settingsRef);
+
+    if (settingsSnap.exists()) {
+      const data = settingsSnap.data();
+
+      return {
+        isOpen: data.isOpen === true,
+        source: "admin"
+      };
+    }
+
+    const now = new Date();
+
+    return {
+      isOpen: now < REGISTRATION_AUTO_CLOSE_TIME,
+      source: "auto"
+    };
+  } catch (error) {
+    console.error("Load registration status failed:", error);
+
+    const now = new Date();
+
+    return {
+      isOpen: now < REGISTRATION_AUTO_CLOSE_TIME,
+      source: "fallback"
+    };
+  }
+}
+
+async function initRegistrationStatus() {
+  registrationMessage.textContent = "報名狀態讀取中...";
+
+  const status = await getRegistrationStatus();
+  registrationIsOpen = status.isOpen;
+
+  applyRegistrationFormStatus();
+
+  if (registrationIsOpen) {
+    registrationMessage.textContent = "";
+  }
+}
+
+function applyRegistrationFormStatus() {
+  const submitButton = registrationForm.querySelector("button[type='submit']");
+  const fields = registrationForm.querySelectorAll("input, button");
+
+  if (registrationIsOpen) {
+    fields.forEach((field) => {
+      field.disabled = false;
+    });
+
+    submitButton.textContent = "送出報名";
+    return;
+  }
+
+  fields.forEach((field) => {
+    field.disabled = true;
+  });
+
+  submitButton.textContent = "報名已截止";
+  registrationMessage.textContent = "報名已截止。如需特殊處理，請洽福委會管理員。";
+}
+
+// -----------------------------
 // Anonymous Auth for Registration
 // -----------------------------
 async function initAnonymousAuth() {
   try {
-    registrationMessage.textContent = "報名系統初始化中...";
+    if (registrationIsOpen) {
+      registrationMessage.textContent = "報名系統初始化中...";
+    }
 
     await signInAnonymously(auth);
   } catch (error) {
@@ -74,7 +147,11 @@ onAuthStateChanged(auth, (user) => {
 
   if (user) {
     anonymousAuthReady = true;
-    registrationMessage.textContent = "";
+
+    if (registrationIsOpen) {
+      registrationMessage.textContent = "";
+    }
+
     console.log("Anonymous registration user ready:", user.uid);
   } else {
     anonymousAuthReady = false;
@@ -143,15 +220,17 @@ registrationForm.addEventListener("submit", async (event) => {
   event.preventDefault();
 
   try {
-    if (!anonymousAuthReady || !currentUser) {
-      registrationMessage.textContent = "報名系統尚未初始化完成，請稍候再試。";
+    const latestStatus = await getRegistrationStatus();
+    registrationIsOpen = latestStatus.isOpen;
+
+    if (!registrationIsOpen) {
+      applyRegistrationFormStatus();
+      registrationMessage.textContent = "報名已截止。";
       return;
     }
 
-    const now = new Date();
-
-    if (now > REGISTRATION_DEADLINE) {
-      registrationMessage.textContent = "報名已截止。";
+    if (!anonymousAuthReady || !currentUser) {
+      registrationMessage.textContent = "報名系統尚未初始化完成，請稍候再試。";
       return;
     }
 
@@ -230,6 +309,7 @@ registrationForm.addEventListener("submit", async (event) => {
     registrationMessage.textContent = `報名失敗：${error.code || ""} ${error.message || ""}`;
   } finally {
     setFormLoading(false);
+    applyRegistrationFormStatus();
   }
 });
 
@@ -244,8 +324,8 @@ function setFormLoading(isLoading, message = "") {
     submitButton.textContent = "上傳中...";
     registrationMessage.textContent = message;
   } else {
-    submitButton.disabled = false;
-    submitButton.textContent = "送出報名";
+    submitButton.disabled = !registrationIsOpen;
+    submitButton.textContent = registrationIsOpen ? "送出報名" : "報名已截止";
   }
 }
 
@@ -281,8 +361,11 @@ function resetCardPreview() {
   }
 }
 
-// 啟動匿名報名身份
+// 啟動
 initCardPreview();
-initAnonymousAuth();
 
-console.log("Register page with Anonymous Auth loaded.");
+initRegistrationStatus().then(() => {
+  initAnonymousAuth();
+});
+
+console.log("Register page v1.6 registration-status loaded.");

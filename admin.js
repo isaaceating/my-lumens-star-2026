@@ -14,6 +14,7 @@ import {
   doc,
   getDoc,
   getDocs,
+  setDoc,
   updateDoc,
   query,
   orderBy,
@@ -30,7 +31,6 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-
 const auth = getAuth(app);
 const db = getFirestore(app);
 const provider = new GoogleAuthProvider();
@@ -38,6 +38,15 @@ const provider = new GoogleAuthProvider();
 let currentUser = null;
 let isCurrentUserAdmin = false;
 let adminContestantsCache = [];
+let isRegistrationToggleBusy = false;
+
+const REGISTRATION_AUTO_CLOSE_TIME = new Date("2026-06-01T00:00:00+08:00");
+
+let registrationSettingsCache = {
+  isOpen: null,
+  isAutoClosed: false,
+  exists: false
+};
 
 // DOM
 const adminLoginButton = document.getElementById("adminLoginButton");
@@ -47,6 +56,10 @@ const adminAccessStatus = document.getElementById("adminAccessStatus");
 const adminContent = document.getElementById("adminContent");
 const adminContestantsTable = document.getElementById("adminContestantsTable");
 const refreshAdminDataButton = document.getElementById("refreshAdminDataButton");
+
+const registrationStatusText = document.getElementById("registrationStatusText");
+const registrationSettingsMessage = document.getElementById("registrationSettingsMessage");
+const toggleRegistrationButton = document.getElementById("toggleRegistrationButton");
 
 // Edit Modal DOM
 const editModal = document.getElementById("editModal");
@@ -85,7 +98,12 @@ adminLogoutButton.addEventListener("click", async () => {
 });
 
 refreshAdminDataButton.addEventListener("click", async () => {
+  await loadRegistrationSettings();
   await loadContestantsForAdmin();
+});
+
+toggleRegistrationButton.addEventListener("click", async () => {
+  await toggleRegistrationStatus();
 });
 
 onAuthStateChanged(auth, async (user) => {
@@ -94,17 +112,37 @@ onAuthStateChanged(auth, async (user) => {
 
   adminContent.classList.remove("hidden");
 
+  // 重要：報名頁會建立 Anonymous Auth。
+  // 如果 Admin 頁吃到匿名登入，會導致 Google 登入按鈕消失、Admin 驗證失敗。
+  if (user && user.isAnonymous) {
+    adminUserStatus.textContent = "偵測到匿名報名身份，正在切換為管理員登入模式...";
+    adminAccessStatus.textContent = "請使用 Google Admin 帳號登入。";
+    adminLoginButton.classList.remove("hidden");
+    adminLogoutButton.classList.add("hidden");
+
+    try {
+      await signOut(auth);
+    } catch (error) {
+      console.warn("Anonymous admin sign out failed:", error);
+    }
+
+    await loadRegistrationSettings();
+    await loadContestantsForAdmin();
+    return;
+  }
+
   if (!user) {
     adminUserStatus.textContent = "尚未登入";
     adminAccessStatus.textContent = "目前為瀏覽模式。登入並具備管理員權限後，才可以編輯資料。";
     adminLoginButton.classList.remove("hidden");
     adminLogoutButton.classList.add("hidden");
 
+    await loadRegistrationSettings();
     await loadContestantsForAdmin();
     return;
   }
 
-  adminUserStatus.textContent = `已登入：${user.email}`;
+  adminUserStatus.textContent = `已登入：${user.email || "未知帳號"}`;
   adminLoginButton.classList.add("hidden");
   adminLogoutButton.classList.remove("hidden");
 
@@ -114,6 +152,7 @@ onAuthStateChanged(auth, async (user) => {
     adminAccessStatus.textContent = "目前為瀏覽模式。此帳號沒有管理員權限，無法編輯資料。";
     isCurrentUserAdmin = false;
 
+    await loadRegistrationSettings();
     await loadContestantsForAdmin();
     return;
   }
@@ -121,6 +160,7 @@ onAuthStateChanged(auth, async (user) => {
   isCurrentUserAdmin = true;
   adminAccessStatus.textContent = "管理員模式已啟用，可以編輯資料。";
 
+  await loadRegistrationSettings();
   await loadContestantsForAdmin();
 });
 
@@ -151,12 +191,146 @@ function requireAdminPermission() {
     return false;
   }
 
+  if (currentUser.isAnonymous) {
+    alert("目前是匿名報名身份，請先登出後使用 Google Admin 帳號登入。");
+    return false;
+  }
+
   if (!isCurrentUserAdmin) {
     alert("此帳號沒有管理員權限，無法編輯資料。");
     return false;
   }
 
   return true;
+}
+
+// -----------------------------
+// Registration Settings
+// -----------------------------
+async function getRegistrationSettingsFromFirestore() {
+  const settingsRef = doc(db, "settings", "registration");
+  const settingsSnap = await getDoc(settingsRef);
+
+  const now = new Date();
+  const isPastAutoCloseTime = now >= REGISTRATION_AUTO_CLOSE_TIME;
+
+  if (settingsSnap.exists()) {
+    const data = settingsSnap.data();
+
+    return {
+      isOpen: data.isOpen === true,
+      isAutoClosed: false,
+      exists: true
+    };
+  }
+
+  return {
+    isOpen: !isPastAutoCloseTime,
+    isAutoClosed: isPastAutoCloseTime,
+    exists: false
+  };
+}
+
+async function loadRegistrationSettings() {
+  try {
+    if (!registrationStatusText || !toggleRegistrationButton) return;
+
+    registrationStatusText.textContent = "報名狀態讀取中...";
+    toggleRegistrationButton.textContent = "讀取中...";
+
+    registrationSettingsCache = await getRegistrationSettingsFromFirestore();
+
+    renderRegistrationSettings();
+  } catch (error) {
+    console.error("Load registration settings failed:", error);
+
+    if (registrationStatusText) {
+      registrationStatusText.textContent = `報名狀態讀取失敗：${error.message}`;
+    }
+
+    if (toggleRegistrationButton) {
+      toggleRegistrationButton.textContent = "重新讀取失敗";
+    }
+
+    if (registrationSettingsMessage) {
+      registrationSettingsMessage.textContent = "請確認 Firestore Rules 與 settings/registration 是否設定正確。";
+    }
+  }
+}
+
+function renderRegistrationSettings() {
+  const isOpen = registrationSettingsCache.isOpen === true;
+
+  if (registrationStatusText) {
+    registrationStatusText.textContent = isOpen
+      ? "目前狀態：報名開放中"
+      : "目前狀態：報名已關閉";
+  }
+
+  if (toggleRegistrationButton) {
+    if (isRegistrationToggleBusy) {
+      toggleRegistrationButton.textContent = "更新中...";
+    } else {
+      toggleRegistrationButton.textContent = isOpen ? "關閉報名" : "開啟報名";
+    }
+  }
+
+  if (registrationSettingsMessage) {
+    if (!isCurrentUserAdmin) {
+      registrationSettingsMessage.textContent = "只有 Admin 可以手動開啟或關閉報名。";
+    } else if (registrationSettingsCache.isAutoClosed) {
+      registrationSettingsMessage.textContent = "目前因超過 2026/6/1 00:00，系統已自動視為報名截止。Admin 可手動重新開啟。";
+    } else {
+      registrationSettingsMessage.textContent = "";
+    }
+  }
+}
+
+async function toggleRegistrationStatus() {
+  if (isRegistrationToggleBusy) return;
+
+  if (!requireAdminPermission()) {
+    await loadRegistrationSettings();
+    return;
+  }
+
+  try {
+    isRegistrationToggleBusy = true;
+    renderRegistrationSettings();
+
+    const latestSettings = await getRegistrationSettingsFromFirestore();
+    const currentStatus = latestSettings.isOpen === true;
+    const nextStatus = !currentStatus;
+    const actionText = nextStatus ? "開啟" : "關閉";
+
+    const confirmed = confirm(`確定要${actionText}報名嗎？`);
+
+    if (!confirmed) {
+      registrationSettingsCache = latestSettings;
+      isRegistrationToggleBusy = false;
+      renderRegistrationSettings();
+      return;
+    }
+
+    const settingsRef = doc(db, "settings", "registration");
+
+    await setDoc(settingsRef, {
+      isOpen: nextStatus,
+      updatedAt: serverTimestamp(),
+      updatedBy: currentUser.email || "",
+      updatedByUid: currentUser.uid
+    }, { merge: true });
+
+    registrationSettingsCache = await getRegistrationSettingsFromFirestore();
+
+    alert(`報名已${nextStatus ? "開啟" : "關閉"}。`);
+  } catch (error) {
+    console.error("Toggle registration status failed:", error);
+    alert(`更新報名狀態失敗：${error.code || ""} ${error.message || ""}`);
+  } finally {
+    isRegistrationToggleBusy = false;
+    await loadRegistrationSettings();
+  }
 }
 
 // -----------------------------
@@ -250,6 +424,7 @@ function renderAdminContestants(contestants) {
         ? `
           <div class="admin-row-actions">
             <button
+              type="button"
               class="edit-contestant-button admin-edit-button"
               data-id="${contestant.id}"
             >
@@ -257,6 +432,7 @@ function renderAdminContestants(contestants) {
             </button>
 
             <button
+              type="button"
               class="toggle-publish-button"
               data-id="${contestant.id}"
               data-current="${isPublished}"
@@ -265,6 +441,7 @@ function renderAdminContestants(contestants) {
             </button>
 
             <button
+              type="button"
               class="save-order-button secondary-button"
               data-id="${contestant.id}"
             >
@@ -542,4 +719,4 @@ function escapeHtml(value) {
     .replaceAll("'", "&#039;");
 }
 
-console.log("Admin page v1.4 public-view-admin-edit loaded.");
+console.log("Admin page v1.6 registration-control-stable loaded.");
